@@ -9,14 +9,10 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 class CacheControlMiddleware
 {
-    /** @var Config The application configuration */
-    protected $config;
-
     /** Create a new CacheControlMiddleware object. */
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
+    public function __construct(
+        private Config $config
+    ) {}
 
     /** Invoke the CacheControlMiddleware class. */
     public function __invoke(Request $request, RequestHandler $handler): ResponseInterface

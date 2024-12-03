@@ -12,25 +12,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FileInfoController
 {
-    /** @var Config The application configuration */
-    protected $config;
-
-    /** @var CacheInterface The application cache */
-    protected $cache;
-
-    /** @var TranslatorInterface Translator component */
-    protected $translator;
-
     /** Create a new FileInfoHandler object. */
     public function __construct(
-        Config $config,
-        CacheInterface $cache,
-        TranslatorInterface $translator
-    ) {
-        $this->config = $config;
-        $this->cache = $cache;
-        $this->translator = $translator;
-    }
+        private Config $config,
+        private CacheInterface $cache,
+        private TranslatorInterface $translator
+    ) {}
 
     /** Invoke the FileInfoHandler. */
     public function __invoke(Request $request, Response $response): ResponseInterface
@@ -38,7 +25,7 @@ class FileInfoController
         $path = $request->getQueryParams()['info'];
 
         $file = new SplFileInfo(
-           (string) realpath($this->config->get('base_path') . '/' . $path)
+            (string) realpath($this->config->get('base_path') . '/' . $path)
         );
 
         if (! $file->isFile()) {

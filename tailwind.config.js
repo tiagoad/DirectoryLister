@@ -3,23 +3,16 @@ const colors = require('tailwindcss/colors');
 
 module.exports = {
     darkMode: 'class',
-    mode: 'jit',
-    purge: {
-        mode: 'all',
-        content: [
-            'app/resources/**/*.{js,scss}',
-            'app/src/**/*.php',
-            'app/views/**/*.twig',
-        ],
-        options: {
-            safelist: ['html', 'body', 'main', 'fab', 'fas', /^hljs/],
-        }
-    },
+    content: [
+        'app/resources/**/*.{js,scss}',
+        'app/src/**/*.php',
+        'app/views/**/*.twig',
+    ],
     theme: {
         extend: {
             colors: {
                 blue: colors.sky,
-                gray: colors.blueGray,
+                gray: colors.slate,
                 purple: colors.violet,
             },
             fontFamily: {
@@ -28,13 +21,9 @@ module.exports = {
                 sans: ['Work Sans', ...defaultTheme.fontFamily.sans],
             },
             textColor: {
+                bluesky: '#0886FE',
                 github: '#171515',
-                twitter: '#1DA1F2'
             }
         }
-    },
-    variants: {
-        backgroundOpacity: ['dark'],
-        visibility: ['responsive', 'hover', 'group-hover']
     }
 };

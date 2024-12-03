@@ -7,17 +7,12 @@ use Tightenco\Collect\Support\Collection;
 
 class Asset extends ViewFunction
 {
-    /** @var string The function name */
-    protected $name = 'asset';
-
-    /** @var Config The application configuration */
-    protected $config;
+    protected string $name = 'asset';
 
     /** Create a new Asset object. */
-    public function __construct(Config $container)
-    {
-        $this->config = $container;
-    }
+    public function __construct(
+        private Config $config
+    ) {}
 
     /** Return the path to an asset. */
     public function __invoke(string $path): string
@@ -25,13 +20,18 @@ class Asset extends ViewFunction
         $path = '/' . ltrim($path, '/');
 
         if ($this->mixManifest()->has($path)) {
+            /** @var string $path */
             $path = $this->mixManifest()->get($path);
         }
 
         return 'app/assets/' . ltrim($path, '/');
     }
 
-    /** Return the mix manifest collection. */
+    /**
+     * Return the mix manifest collection.
+     *
+     * @return Collection<string, string>
+     */
     protected function mixManifest(): Collection
     {
         $mixManifest = $this->config->get('asset_path') . '/mix-manifest.json';

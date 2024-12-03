@@ -8,10 +8,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Cache JavaScript Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -32,10 +32,16 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: apcu, mbstring, memcached, redis, intl
 
       - name: Install PHP Dependencies
-        run: composer update
+        run: composer install --no-interaction --no-progress --no-scripts --prefer-dist
 
       - name: Verify Coding Standards
         run: app/vendor/bin/php-cs-fixer fix --diff --dry-run
@@ -46,10 +52,16 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: apcu, mbstring, memcached, redis, intl
 
       - name: Install PHP Dependencies
-        run: composer update
+        run: composer install --no-interaction --no-progress --no-scripts --prefer-dist
 
       - name: Run Static Analysis
         run: app/vendor/bin/phpstan
@@ -67,11 +79,11 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.4', '8.0']
+        php-versions: ['8.1', '8.2', '8.3', '8.4']
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -85,14 +97,14 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache PHP Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install PHP Dependencies
-        run: composer update
+        run: composer install --no-interaction --no-progress --no-scripts --prefer-dist
 
       - name: Run Tests
         run: app/vendor/bin/phpunit --coverage-text
@@ -107,7 +119,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get Tag
         id: vars
@@ -117,7 +129,7 @@ jobs:
         run: make artifacts
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.vars.outputs.tag }}
           draft: true

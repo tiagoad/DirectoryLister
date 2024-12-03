@@ -2,46 +2,36 @@
 
 namespace App\Controllers;
 
+use App\CallbackStream;
 use App\Config;
 use App\Support\Str;
-use App\TemporaryFile;
+use DateTime;
+use Exception;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use ZipArchive;
+use ZipStream\CompressionMethod;
+use ZipStream\OperationMode;
+use ZipStream\ZipStream;
 
 class ZipController
 {
-    /** @var Config The application configuration */
-    protected $config;
-
-    /** @var CacheInterface The application cache */
-    protected $cache;
-
-    /** @var Finder The Finder Component */
-    protected $finder;
-
-    /** @var TranslatorInterface Translator component */
-    protected $translator;
-
     /** Create a new ZipHandler object. */
     public function __construct(
-        Config $config,
-        CacheInterface $cache,
-        Finder $finder,
-        TranslatorInterface $translator
-    ) {
-        $this->config = $config;
-        $this->cache = $cache;
-        $this->finder = $finder;
-        $this->translator = $translator;
-    }
+        private Config $config,
+        private Finder $finder,
+        private TranslatorInterface $translator
+    ) {}
 
-    /** Invoke the ZipHandler. */
+    /** Invoke the ZipHandler.
+     * @throws \ZipStream\Exception\FileNotFoundException
+     * @throws \ZipStream\Exception\FileNotReadableException
+     * @throws Exception
+     */
     public function __invoke(Request $request, Response $response): ResponseInterface
     {
         $path = $request->getQueryParams()['zip'];
@@ -50,42 +40,75 @@ class ZipController
             return $response->withStatus(404, $this->translator->trans('error.file_not_found'));
         }
 
-        $response->getBody()->write(
-            $this->cache->get(sprintf('zip-%s', sha1($path)), function () use ($path): string {
-                return $this->createZip($path)->getContents();
-            })
-        );
-
-        return $response->withHeader('Content-Type', 'application/zip')
+        $response = $response
+            ->withHeader('Content-Type', 'application/zip')
             ->withHeader('Content-Disposition', sprintf(
                 'attachment; filename="%s.zip"',
                 $this->generateFileName($path)
-            ));
+            ))
+            ->withHeader('X-Accel-Buffering', 'no');
+
+        $files = $this->finder->in($path)->files();
+
+        $zip = $this->createZip($path, $files);
+        $size = $zip->finish();
+
+        $response = $this->augmentHeadersWithEstimatedSize($response, $size)->withBody(
+            new CallbackStream(function () use ($zip) {
+                $zip->executeSimulation();
+            })
+        );
+
+        return $response;
     }
 
-    /** Create a zip file from a directory. */
-    protected function createZip(string $path): TemporaryFile
+    /**
+     * Create a zip stream from a directory.
+     *
+     * @throws \ZipStream\Exception\FileNotFoundException
+     * @throws \ZipStream\Exception\FileNotReadableException
+     * @throws Exception
+     */
+    protected function createZip(string $path, Finder $files): ZipStream
     {
-        $zip = new ZipArchive;
-        $zip->open((string) $tempFile = new TemporaryFile(
-            $this->config->get('cache_path')
-        ), ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $compressionMethod = $this->config->get('zip_compress') ? CompressionMethod::DEFLATE : CompressionMethod::STORE;
 
-        foreach ($this->finder->in($path)->files() as $file) {
-            $zip->addFile((string) $file->getRealPath(), $this->stripPath($file, $path));
+        $zip = new ZipStream(
+            sendHttpHeaders: false,
+            operationMode: OperationMode::SIMULATE_LAX
+        );
+
+        foreach ($files as $file) {
+            try {
+                /** @throws RuntimeException */
+                $modifiedTime = new DateTime('@' . (int) $file->getMTime());
+            } catch (RuntimeException) {
+                $modifiedTime = new DateTime('@' . (int) lstat($file->getPathname())['mtime']);
+            }
+
+            $zip->addFileFromPath(
+                $this->stripPath($file, $path),
+                (string) $file->getRealPath(),
+                compressionMethod: $compressionMethod,
+                lastModificationDateTime: $modifiedTime,
+                exactSize: $file->getSize()
+            );
         }
 
-        $zip->close();
+        return $zip;
+    }
 
-        return $tempFile;
+    protected function augmentHeadersWithEstimatedSize(Response $response, int $size): Response
+    {
+        $response = $response->withHeader('Content-Length', (string) $size);
+
+        return $response;
     }
 
     /** Return the path to a file with the preceding root path stripped. */
     protected function stripPath(SplFileInfo $file, string $path): string
     {
-        $pattern = sprintf(
-            '/^%s%s?/', preg_quote($path, '/'), preg_quote(DIRECTORY_SEPARATOR, '/')
-        );
+        $pattern = sprintf('/^%s%s?/', preg_quote($path, '/'), preg_quote(DIRECTORY_SEPARATOR, '/'));
 
         return (string) preg_replace($pattern, '', $file->getPathname());
     }

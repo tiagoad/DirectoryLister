@@ -5,15 +5,14 @@ namespace App;
 use BadMethodCallException;
 use Tightenco\Collect\Support\Collection;
 
+/** @extends Collection<int, string> */
 class HiddenFiles extends Collection
 {
-    /** @inheritdoc */
     protected function __construct($items = [])
     {
         parent::__construct($items);
     }
 
-    /** {@inheritdoc} */
     public static function make($items = [])
     {
         throw new BadMethodCallException('Method not implemented');

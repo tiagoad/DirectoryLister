@@ -7,14 +7,10 @@ use DI\NotFoundException;
 
 class Config
 {
-    /** @var Container The application container */
-    protected $container;
-
     /** Create a new Config object. */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
+    public function __construct(
+        private Container $container
+    ) {}
 
     /**
      * Get the value of a configuration variable.

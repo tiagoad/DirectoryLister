@@ -14,30 +14,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DirectoryController
 {
-    /** @var Config The application configuration */
-    protected $config;
-
-    /** @var Finder File finder component */
-    protected $finder;
-
-    /** @var Twig Twig templating component */
-    protected $view;
-
-    /** @var TranslatorInterface Translator component */
-    protected $translator;
-
     /** Create a new IndexController object. */
     public function __construct(
-        Config $config,
-        Finder $finder,
-        Twig $view,
-        TranslatorInterface $translator
-    ) {
-        $this->config = $config;
-        $this->finder = $finder;
-        $this->view = $view;
-        $this->translator = $translator;
-    }
+        private Config $config,
+        private Finder $finder,
+        private Twig $view,
+        private TranslatorInterface $translator
+    ) {}
 
     /** Invoke the IndexController. */
     public function __invoke(Request $request, Response $response): ResponseInterface

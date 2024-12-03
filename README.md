@@ -9,7 +9,7 @@
     <br>
     <img alt="Packagist PHP Version Support" src="https://img.shields.io/packagist/php-v/phlak/directory-lister?style=flat-square">
     <a href="https://github.com/DirectoryLister/DirectoryLister/blob/master/LICENSE"><img src="https://img.shields.io/github/license/DirectoryLister/DirectoryLister?style=flat-square" alt="License"></a>
-    <a href="https://github.com/DirectoryLister/DirectoryLister/actions" alt="Build Status"><img src="https://img.shields.io/github/checks-status/DirectoryLister/DirectoryLister/master?style=flat-square"></a>
+    <a href="https://github.com/DirectoryLister/DirectoryLister/actions" alt="Build Status"><img src="https://img.shields.io/github/actions/workflow/status/DirectoryLister/DirectoryLister/test-suite.yaml?style=flat-square"></a>
 </p>
 
 ---
@@ -20,7 +20,7 @@ installation you'll be up and running in less than a minute.
 
 Directory Lister is created and maintained by
 [Chris Kankiewicz](https://www.chriskankiewicz.com)
-([@PHLAK](https://twitter.com/PHLAK)) with help from
+([@PHLAK.dev](https://bsky.app/profile/phlak.dev)) with help through
 [community contributions](https://github.com/DirectoryLister/DirectoryLister/graphs/contributors).
 
 Features
@@ -38,7 +38,7 @@ Features
 Requirements
 ------------
 
-  - Directory Lister requires [PHP](https://www.php.net/) >= 7.2
+  - Directory Lister requires [PHP](https://www.php.net/) >= 8.0
     - The [Zip](https://www.php.net/manual/en/book.zip.php) extension is required for zip downloads
     - The [DOM](https://www.php.net/en/dom) and [Fileinfo](https://www.php.net/manual/en/book.fileinfo.php) extensions are required for README rendering
 
@@ -73,7 +73,7 @@ Troubleshooting
 
 See the [Help & Support](https://docs.directorylister.com/help-and-support) section of the documentation for troubleshooting instructions.
 
-For general help and support join our [GitHub Discussion](https://github.com/DirectoryLister/DirectoryLister/discussions) or reach out on [Twitter](https://twitter.com/DirectoryLister).
+For general help and support join our [GitHub Discussion](https://github.com/DirectoryLister/DirectoryLister/discussions) or reach out on [Bluesky](https://bsky.app/profile/directorylister.com).
 
 Please report bugs to the [GitHub Issue Tracker](https://github.com/DirectoryLister/DirectoryLister/issues).
 
